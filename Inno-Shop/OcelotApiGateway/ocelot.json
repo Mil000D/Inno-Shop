@@ -14,7 +14,7 @@
       "SwaggerKey": "auth"
     },
     {
-      "UpstreamPathTemplate": "/gateway/products/{everything}",
+      "UpstreamPathTemplate": "/gateway/products",
       "UpstreamHttpMethod": [ "Get", "Post", "Delete" ],
       "DownstreamPathTemplate": "/api/products",
       "DownstreamScheme": "https",

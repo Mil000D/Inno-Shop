@@ -70,8 +70,8 @@ namespace UserManagementService.Controllers
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("7CCA9FF4A0D5427FBB382974B5E2AC092BB38974B5E4B5E2AC092BB38974B5E2AC092AC09"));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
             var token = new JwtSecurityToken(
-                issuer: "https://localhost:8888",
-                audience: "https://localhost:8888",
+                issuer: "issuer",
+                audience: "audience",
                 claims: claims,
                 expires: DateTime.Now.AddMinutes(30),
                 signingCredentials: creds);
