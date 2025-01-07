@@ -8,7 +8,7 @@ namespace ProductManagementService.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
+    [Authorize(Roles = "User, Admin")]
     public class ProductsController : ControllerBase
     {
         private readonly ProductDbContext _context;

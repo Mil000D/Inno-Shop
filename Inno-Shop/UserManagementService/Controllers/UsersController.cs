@@ -2,13 +2,14 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using UserManagementService.DAL.Context;
+using UserManagementService.DTOs;
 using UserManagementService.Models;
 
 namespace UserManagementService.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     public class UsersController : ControllerBase
     {
         private readonly UserDbContext _context;
@@ -36,12 +37,26 @@ namespace UserManagementService.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<User>> CreateUser(User user)
+        public async Task<ActionResult<User>> CreateUser([FromBody] RegisterDTO register)
         {
-            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(user.PasswordHash);
+            if (_context.Users.Any(u => u.Email == register.Email))
+            {
+                return BadRequest("User with this email already exists.");
+            }
+
+            var user = new User
+            {
+                Name = register.Name,
+                Email = register.Email,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(register.Password),
+                Role = register.Role,
+                IsActive = true
+            };
+
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
+
+            return Ok("User registered successfully.");
         }
 
         [HttpPut("{id}")]

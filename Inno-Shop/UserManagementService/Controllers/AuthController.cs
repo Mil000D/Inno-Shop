@@ -5,6 +5,7 @@ using System.Security.Claims;
 using System.Text;
 using UserManagementService.DAL.Context;
 using UserManagementService.DTOs;
+using UserManagementService.Enums;
 using UserManagementService.Models;
 
 namespace UserManagementService.Controllers
@@ -35,37 +36,22 @@ namespace UserManagementService.Controllers
             return Ok(new { token });
         }
 
-        [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterDTO register)
-        {
-            if (_context.Users.Any(u => u.Email == register.Email))
-            {
-                return BadRequest("User with this email already exists.");
-            }
-
-            var user = new User
-            {
-                Name = register.Name,
-                Email = register.Email,
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword(register.Password),
-                Role = register.Role,
-                IsActive = true
-            };
-
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
-
-            return Ok("User registered successfully.");
-        }
 
         private string GenerateJwtToken(User user)
         {
             var claims = new[]
             {
-            new Claim(JwtRegisteredClaimNames.Sub, user.Email),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
-        };
+                new Claim("Role", "User"),
+                new Claim(ClaimTypes.Role, "User")
+            };
+
+            if (user.Role == Role.Admin)
+            {
+                claims = new[] { new Claim("Role", "Admin"),
+                                 new Claim("Role", "User"),
+                                 new Claim(ClaimTypes.Role, "Admin"),
+                                 new Claim(ClaimTypes.Role, "User")};
+            }
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("7CCA9FF4A0D5427FBB382974B5E2AC092BB38974B5E4B5E2AC092BB38974B5E2AC092AC09"));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

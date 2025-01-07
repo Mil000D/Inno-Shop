@@ -14,9 +14,31 @@
       "SwaggerKey": "auth"
     },
     {
-      "UpstreamPathTemplate": "/gateway/products",
-      "UpstreamHttpMethod": [ "Get", "Post", "Delete" ],
-      "DownstreamPathTemplate": "/api/products",
+      "UpstreamPathTemplate": "/gateway/users/{everything}",
+      "UpstreamHttpMethod": [ "Get", "Post", "Put", "Delete" ],
+      "DownstreamScheme": "https",
+      "DownstreamPathTemplate": "/api/users/{everything}",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7001
+        }
+      ],
+      "FileCacheOptions": {
+        "TtlSeconds": 10
+      },
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      },
+      "RouteClaimsRequirement": {
+        "Role": "Admin"
+      },
+      "SwaggerKey": "users"
+    },
+    {
+      "UpstreamPathTemplate": "/gateway/products/{everything}",
+      "UpstreamHttpMethod": [ "Get", "Post", "Put", "Delete" ],
+      "DownstreamPathTemplate": "/api/products/{everything}",
       "DownstreamScheme": "https",
       "DownstreamHostAndPorts": [
         {
@@ -24,10 +46,16 @@
           "Port": 7002
         }
       ],
-      "SwaggerKey": "products",
+      "FileCacheOptions": {
+        "TtlSeconds": 10
+      },
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer"
-      }
+      },
+      "RouteClaimsRequirement": {
+        "Role": "User"
+      },
+      "SwaggerKey": "products"
     }
   ],
   "GlobalConfiguration": {
@@ -39,6 +67,16 @@
       "Config": [
         {
           "Name": "Auth API",
+          "Version": "v1",
+          "Url": "https://localhost:7001/swagger/v1/swagger.json"
+        }
+      ]
+    },
+    {
+      "Key": "users",
+      "Config": [
+        {
+          "Name": "Users API",
           "Version": "v1",
           "Url": "https://localhost:7001/swagger/v1/swagger.json"
         }
