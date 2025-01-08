@@ -1,7 +1,7 @@
 ﻿using UserManagementService.Enums;
 namespace UserManagementService.DTOs
 {
-    public class RegisterDTO
+    public class UserDTO
     {
         public required string Name { get; set; }
         public required string Email { get; set; }

@@ -12,16 +12,10 @@ namespace UserManagementService.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class AuthController : ControllerBase
+    public class AuthController(UserDbContext context, IConfiguration configuration) : ControllerBase
     {
-        private readonly UserDbContext _context;
-        private readonly IConfiguration _configuration;
-
-        public AuthController(UserDbContext context, IConfiguration configuration)
-        {
-            _context = context;
-            _configuration = configuration;
-        }
+        private readonly UserDbContext _context = context;
+        private readonly IConfiguration _configuration = configuration;
 
         [HttpPost("login")]
         public IActionResult Login([FromBody] LoginDTO login)
@@ -41,13 +35,15 @@ namespace UserManagementService.Controllers
         {
             var claims = new[]
             {
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim("Role", "User"),
                 new Claim(ClaimTypes.Role, "User")
             };
 
             if (user.Role == Role.Admin)
             {
-                claims = new[] { new Claim("Role", "Admin"),
+                claims = new[] { new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                                 new Claim("Role", "Admin"),
                                  new Claim("Role", "User"),
                                  new Claim(ClaimTypes.Role, "Admin"),
                                  new Claim(ClaimTypes.Role, "User")};

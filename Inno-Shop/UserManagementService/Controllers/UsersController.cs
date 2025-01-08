@@ -10,14 +10,9 @@ namespace UserManagementService.Controllers
     [ApiController]
     [Route("api/[controller]")]
     [Authorize(Roles = "Admin")]
-    public class UsersController : ControllerBase
+    public class UsersController(UserDbContext context) : ControllerBase
     {
-        private readonly UserDbContext _context;
-
-        public UsersController(UserDbContext context)
-        {
-            _context = context;
-        }
+        private readonly UserDbContext _context = context;
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<User>>> GetUsers()
@@ -37,7 +32,7 @@ namespace UserManagementService.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<User>> CreateUser([FromBody] RegisterDTO register)
+        public async Task<ActionResult<User>> CreateUser([FromBody] UserDTO register)
         {
             if (_context.Users.Any(u => u.Email == register.Email))
             {
