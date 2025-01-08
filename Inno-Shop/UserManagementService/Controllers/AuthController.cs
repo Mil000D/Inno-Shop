@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using EventBus;
+using MassTransit;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -12,15 +15,16 @@ namespace UserManagementService.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class AuthController(UserDbContext context, IConfiguration configuration) : ControllerBase
+    public class AuthController(UserDbContext context, IConfiguration configuration, IPublishEndpoint publishEndpoint) : ControllerBase
     {
         private readonly UserDbContext _context = context;
         private readonly IConfiguration _configuration = configuration;
+        private readonly IPublishEndpoint _publishEndpoint = publishEndpoint;
 
         [HttpPost("login")]
-        public IActionResult Login([FromBody] LoginDTO login)
+        public async Task<IActionResult> LoginAsync([FromBody] LoginDTO login)
         {
-            var user = _context.Users.SingleOrDefault(u => u.Email == login.Email);
+            var user = await _context.Users.SingleOrDefaultAsync(u => u.Email == login.Email);
             if (user == null || !BCrypt.Net.BCrypt.Verify(login.Password, user.PasswordHash))
             {
                 return Unauthorized();

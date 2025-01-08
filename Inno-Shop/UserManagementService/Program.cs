@@ -10,19 +10,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<UserDbContext>(options =>
 {
-    options.UseSqlite($"Data Source={Path.Combine(Directory.GetCurrentDirectory(), @"Database\database.db")}");
+    options.UseSqlServer(builder.Configuration.GetConnectionString("ConnectionString"));
 });
 builder.Services.AddMassTransit(x =>
 {
-    x.AddEntityFrameworkOutbox<UserDbContext>(o =>
-    {
-        o.QueryDelay = TimeSpan.FromSeconds(10);
 
-        o.UseSqlServer();
-        o.UseBusOutbox();
-    });
-
-    x.SetEndpointNameFormatter(new KebabCaseEndpointNameFormatter("user", false));
+    x.SetKebabCaseEndpointNameFormatter();
 
     x.UsingRabbitMq((context, cfg) =>
     {

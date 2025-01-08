@@ -62,7 +62,6 @@ namespace ProductManagementService.Controllers
                     Price = productDTO.Price,
                     IsAvailable = true,
                     CreatorUserId = userId,
-                    CreationDate = DateTime.Now
                 };
                 _context.Products.Add(product);
                 await _context.SaveChangesAsync();

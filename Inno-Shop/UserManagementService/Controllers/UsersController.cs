@@ -82,7 +82,7 @@ namespace UserManagementService.Controllers
             _context.Users.Remove(user);
             await _context.SaveChangesAsync();
 
-            await _publishEndpoint.Publish<UserDeleted>(new { UserId = id });
+            await _publishEndpoint.Publish<UserDeleted>(new { Id = id });
             return NoContent();
         }
     }
