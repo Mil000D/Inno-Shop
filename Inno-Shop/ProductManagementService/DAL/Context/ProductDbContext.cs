@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using MassTransit;
+using Microsoft.EntityFrameworkCore;
 using ProductManagementService.Models;
 
 namespace ProductManagementService.DAL.Context

@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using EventBus;
+using MassTransit;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using UserManagementService.DAL.Context;
@@ -10,9 +12,10 @@ namespace UserManagementService.Controllers
     [ApiController]
     [Route("api/[controller]")]
     [Authorize(Roles = "Admin")]
-    public class UsersController(UserDbContext context) : ControllerBase
+    public class UsersController(UserDbContext context, IPublishEndpoint publishEndpoint) : ControllerBase
     {
         private readonly UserDbContext _context = context;
+        private readonly IPublishEndpoint _publishEndpoint = publishEndpoint;
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<User>>> GetUsers()
@@ -78,6 +81,8 @@ namespace UserManagementService.Controllers
 
             _context.Users.Remove(user);
             await _context.SaveChangesAsync();
+
+            await _publishEndpoint.Publish<UserDeleted>(new { UserId = id });
             return NoContent();
         }
     }

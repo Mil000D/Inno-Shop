@@ -1,3 +1,4 @@
+using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -10,6 +11,29 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<UserDbContext>(options =>
 {
     options.UseSqlite($"Data Source={Path.Combine(Directory.GetCurrentDirectory(), @"Database\database.db")}");
+});
+builder.Services.AddMassTransit(x =>
+{
+    x.AddEntityFrameworkOutbox<UserDbContext>(o =>
+    {
+        o.QueryDelay = TimeSpan.FromSeconds(10);
+
+        o.UseSqlServer();
+        o.UseBusOutbox();
+    });
+
+    x.SetEndpointNameFormatter(new KebabCaseEndpointNameFormatter("user", false));
+
+    x.UsingRabbitMq((context, cfg) =>
+    {
+
+        cfg.Host(builder.Configuration["RabbitMq:Host"], "/", host =>
+        {
+            host.Username(builder.Configuration.GetValue("RabbitMq:Username", "guest"));
+            host.Password(builder.Configuration.GetValue("RabbitMq:Password", "guest"));
+        });
+        cfg.ConfigureEndpoints(context);
+    });
 });
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 .AddJwtBearer(options =>

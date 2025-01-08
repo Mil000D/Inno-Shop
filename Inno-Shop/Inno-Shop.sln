@@ -3,11 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34330.188
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserManagementService", "UserManagementService\UserManagementService.csproj", "{9329C639-E7E8-4E9E-AF13-0765F62D46ED}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UserManagementService", "UserManagementService\UserManagementService.csproj", "{9329C639-E7E8-4E9E-AF13-0765F62D46ED}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OcelotApiGateway", "OcelotApiGateway\OcelotApiGateway.csproj", "{565F4AF0-B915-4432-BBFD-DDF4398347D2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OcelotApiGateway", "OcelotApiGateway\OcelotApiGateway.csproj", "{565F4AF0-B915-4432-BBFD-DDF4398347D2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProductManagementService", "ProductManagementService\ProductManagementService.csproj", "{ED6DE1D4-E156-458A-88D1-210D1EEA50E8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProductManagementService", "ProductManagementService\ProductManagementService.csproj", "{ED6DE1D4-E156-458A-88D1-210D1EEA50E8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventBus", "EventBus\EventBus.csproj", "{8EC0D3A3-8C5D-4A48-8836-7720475C7155}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +29,10 @@ Global
 		{ED6DE1D4-E156-458A-88D1-210D1EEA50E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ED6DE1D4-E156-458A-88D1-210D1EEA50E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ED6DE1D4-E156-458A-88D1-210D1EEA50E8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8EC0D3A3-8C5D-4A48-8836-7720475C7155}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8EC0D3A3-8C5D-4A48-8836-7720475C7155}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8EC0D3A3-8C5D-4A48-8836-7720475C7155}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8EC0D3A3-8C5D-4A48-8836-7720475C7155}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
