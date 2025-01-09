@@ -84,5 +84,19 @@ namespace ProductManagementService.Services
                 throw new UnauthorizedAccessException("User was not found.");
             }
         }
+
+        public async Task<IEnumerable<Product>> SearchProductsAsync(ClaimsPrincipal user, string? name, string? description, decimal? minPrice, decimal? maxPrice, bool? isAvailable)
+        {
+            var roles = user?.FindAll(ClaimTypes.Role).Select(r => r.Value);
+            if (roles is not null && roles.Contains("Admin"))
+            {
+                return await _productRepository.SearchProductsAsync(name, description, minPrice, maxPrice, isAvailable);
+            }
+            else if (int.TryParse(user?.FindFirst(ClaimTypes.NameIdentifier)?.Value, out int userId))
+            {
+                return await _productRepository.SearchProductsAsync(name, description, minPrice, maxPrice, isAvailable, userId);
+            }
+            throw new UnauthorizedAccessException("User was not found.");
+        }
     }
 }

@@ -50,5 +50,42 @@ namespace ProductManagementService.DAL.Repositories
             _context.Products.Remove(product);
             await _context.SaveChangesAsync();
         }
+
+        public async Task<IEnumerable<Product>> SearchProductsAsync(string? name, string? description, decimal? minPrice, decimal? maxPrice, bool? isAvailable, int? userId = null)
+        {
+            var query = _context.Products.AsQueryable();
+
+            if (userId.HasValue)
+            {
+                query = query.Where(p => p.CreatorUserId == userId.Value);
+            }
+
+            if (!string.IsNullOrEmpty(name))
+            {
+                query = query.Where(p => p.Name.Contains(name));
+            }
+
+            if (!string.IsNullOrEmpty(description))
+            {
+                query = query.Where(p => p.Description.Contains(description));
+            }
+
+            if (minPrice.HasValue)
+            {
+                query = query.Where(p => p.Price >= minPrice.Value);
+            }
+
+            if (maxPrice.HasValue)
+            {
+                query = query.Where(p => p.Price <= maxPrice.Value);
+            }
+
+            if (isAvailable.HasValue)
+            {
+                query = query.Where(p => p.IsAvailable == isAvailable.Value);
+            }
+
+            return await query.ToListAsync();
+        }
     }
 }

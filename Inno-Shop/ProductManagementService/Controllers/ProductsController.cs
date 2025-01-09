@@ -42,7 +42,7 @@ namespace ProductManagementService.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Product>> CreateProduct(ProductDTO productDTO)
+        public async Task<ActionResult<Product>> CreateProduct([FromBody] ProductDTO productDTO)
         {
             try
             {
@@ -56,7 +56,7 @@ namespace ProductManagementService.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateProduct(int id, ProductDTO productDTO)
+        public async Task<IActionResult> UpdateProduct(int id, [FromBody] ProductDTO productDTO)
         {
             try
             {
@@ -88,6 +88,20 @@ namespace ProductManagementService.Controllers
             catch (KeyNotFoundException ex)
             {
                 return NotFound(ex.Message);
+            }
+        }
+
+        [HttpGet("search")]
+        public async Task<IActionResult> SearchProducts([FromQuery] string? name, [FromQuery] string? description, [FromQuery] decimal? minPrice, [FromQuery] decimal? maxPrice, [FromQuery] bool? isAvailable)
+        {
+            try
+            {
+                var products = await _productService.SearchProductsAsync(User, name, description, minPrice, maxPrice, isAvailable);
+                return !products.Any() ? NotFound("No products match the search criteria.") : Ok(products);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return BadRequest(ex.Message);
             }
         }
     }

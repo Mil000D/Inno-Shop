@@ -11,5 +11,6 @@ namespace ProductManagementService.Services
         Task<Product> CreateProductAsync(ProductDTO productDTO, ClaimsPrincipal user);
         Task UpdateProductAsync(int id, ProductDTO productDTO, ClaimsPrincipal user);
         Task DeleteProductAsync(int id, ClaimsPrincipal user);
+        Task<IEnumerable<Product>> SearchProductsAsync(ClaimsPrincipal user, string? name, string? description, decimal? minPrice, decimal? maxPrice, bool? isAvailable);
     }
 }

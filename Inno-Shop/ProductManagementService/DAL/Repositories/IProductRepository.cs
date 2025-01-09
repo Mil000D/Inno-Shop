@@ -13,5 +13,6 @@ namespace ProductManagementService.DAL.Repositories
         Task AddProductAsync(Product product);
         Task UpdateProductAsync(Product product);
         Task DeleteProductAsync(Product product);
+        Task<IEnumerable<Product>> SearchProductsAsync(string? name, string? description, decimal? minPrice, decimal? maxPrice, bool? isAvailable, int? userId = null);
     }
 }
