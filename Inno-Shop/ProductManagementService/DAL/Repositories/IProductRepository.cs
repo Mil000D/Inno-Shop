@@ -8,7 +8,7 @@ namespace ProductManagementService.DAL.Repositories
     {
         Task<IEnumerable<Product>> GetProductsByUserIdAsync(int userId);
         Task<IEnumerable<Product>> GetAvailableProductsAsync();
-        Task<Product?> GetProductByIdAsync(int id);
+        Task<Product?> GetAvailableProductByIdAsync(int id);
         Task<Product?> GetProductByIdAndUserIdAsync(int id, int userId);
         Task AddProductAsync(Product product);
         Task UpdateProductAsync(Product product);

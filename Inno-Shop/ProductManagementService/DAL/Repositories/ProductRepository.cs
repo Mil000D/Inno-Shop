@@ -23,7 +23,7 @@ namespace ProductManagementService.DAL.Repositories
             return await _context.Products.Where(p => p.IsAvailable).ToListAsync();
         }
 
-        public async Task<Product?> GetProductByIdAsync(int id)
+        public async Task<Product?> GetAvailableProductByIdAsync(int id)
         {
             return await _context.Products.FirstOrDefaultAsync(p => p.Id == id && p.IsAvailable);
         }

@@ -28,7 +28,7 @@ namespace ProductManagementService.Services
             var roles = user?.FindAll(ClaimTypes.Role).Select(r => r.Value);
             if (roles is not null && roles.Contains("Admin"))
             {
-                return await _productRepository.GetProductByIdAsync(id);
+                return await _productRepository.GetAvailableProductByIdAsync(id);
             }
             else if (int.TryParse(user?.FindFirst(ClaimTypes.NameIdentifier)?.Value, out int userId))
             {
