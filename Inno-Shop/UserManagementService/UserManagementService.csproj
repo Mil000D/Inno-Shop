@@ -29,4 +29,9 @@
     <ProjectReference Include="..\EventBus\EventBus.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="DAL\Repositories\" />
+    <Folder Include="Services\" />
+  </ItemGroup>
+
 </Project>

@@ -10,15 +10,9 @@ namespace ProductManagementService.Consumers
         private readonly ProductDbContext _context = context;
         public async Task Consume(ConsumeContext<UserDeleted> userDeleted)
         {
-            var products = await _context.Products.Where(p => p.CreatorUserId == userDeleted.Message.Id).ToListAsync();
-            foreach (var product in products)
-            {
-                product.IsAvailable = false;
-            }
-
-            _context.Products.UpdateRange(products);
-
-            await _context.SaveChangesAsync();
+            await _context.Products
+                .Where(p => p.CreatorUserId == userDeleted.Message.Id)
+                .ExecuteDeleteAsync();
         }
     }
 }

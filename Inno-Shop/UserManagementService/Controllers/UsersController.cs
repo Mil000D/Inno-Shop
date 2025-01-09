@@ -1,89 +1,130 @@
-﻿using EventBus;
-using MassTransit;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using UserManagementService.DAL.Context;
 using UserManagementService.DTOs;
 using UserManagementService.Models;
+using UserManagementService.Services;
 
 namespace UserManagementService.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
     [Authorize(Roles = "Admin")]
-    public class UsersController(UserDbContext context, IPublishEndpoint publishEndpoint) : ControllerBase
+    public class UsersController(IUserService userService) : ControllerBase
     {
-        private readonly UserDbContext _context = context;
-        private readonly IPublishEndpoint _publishEndpoint = publishEndpoint;
+        private readonly IUserService _userService = userService;
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<User>>> GetUsers()
         {
-            return await _context.Users.ToListAsync();
+            try
+            {
+                var users = await _userService.GetUsersAsync(User);
+                return Ok(users);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<User>> GetUser(int id)
         {
-            var user = await _context.Users.FindAsync(id);
-            if (user == null)
+            try
             {
-                return NotFound();
+                var user = await _userService.GetUserAsync(id, User);
+                return user is null ? NotFound("There is no such user. Try again!") : Ok(user);
             }
-            return user;
+            catch (UnauthorizedAccessException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpPost]
         public async Task<ActionResult<User>> CreateUser([FromBody] UserDTO register)
         {
-            if (_context.Users.Any(u => u.Email == register.Email))
+            try
             {
-                return BadRequest("User with this email already exists.");
+                var user = await _userService.CreateUserAsync(register);
+                return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
             }
-
-            var user = new User
+            catch (InvalidOperationException ex)
             {
-                Name = register.Name,
-                Email = register.Email,
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword(register.Password),
-                Role = register.Role,
-                IsActive = true
-            };
-
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
-
-            return Ok("User registered successfully.");
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateUser(int id, User user)
+        public async Task<IActionResult> UpdateUser(int id, [FromBody] UserDTO user)
         {
-            if (id != user.Id)
+            try
             {
-                return BadRequest();
+                await _userService.UpdateUserAsync(id, user, User);
+                return Ok("User updated successfully.");
             }
-
-            _context.Entry(user).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
-            return NoContent();
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
-            var user = await _context.Users.FindAsync(id);
-            if (user == null)
+            try
             {
-                return NotFound();
+                await _userService.DeleteUserAsync(id, User);
+                return Ok("User successfully deleted.");
             }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
 
-            _context.Users.Remove(user);
-            await _context.SaveChangesAsync();
+        [HttpPost("deactivate/{id}")]
+        public async Task<IActionResult> DeactivateUser(int id)
+        {
+            try
+            {
+                await _userService.DeactivateUserAsync(id, User);
+                return Ok("User deactivated successfully.");
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
 
-            await _publishEndpoint.Publish<UserDeleted>(new { Id = id });
-            return NoContent();
+        [HttpPost("activate/{id}")]
+        public async Task<IActionResult> ActivateUser(int id)
+        {
+            try
+            {
+                await _userService.ActivateUserAsync(id, User);
+                return Ok("User activated successfully.");
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
     }
 }

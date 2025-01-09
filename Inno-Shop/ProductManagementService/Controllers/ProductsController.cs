@@ -1,112 +1,94 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using ProductManagementService.DAL.Context;
 using ProductManagementService.DTOs;
 using ProductManagementService.Models;
-using System.Security.Claims;
+using ProductManagementService.Services;
 
 namespace ProductManagementService.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
     [Authorize(Roles = "User, Admin")]
-    public class ProductsController(ProductDbContext context) : ControllerBase
+    public class ProductsController(IProductService productService) : ControllerBase
     {
-        private readonly ProductDbContext _context = context;
+        private readonly IProductService _productService = productService;
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Product>>> GetProducts()
         {
-            var roles = User?.FindAll(ClaimTypes.Role).Select(r => r.Value);
-            if (roles is not null && roles.Contains("Admin"))
+            try
             {
-                return await _context.Products.Where(p => p.IsAvailable).ToListAsync();
+                var products = await _productService.GetProductsAsync(User);
+                return !products.Any() ? NotFound("Could not find any product.") : Ok(products);
             }
-            else if(int.TryParse(User?.FindFirst(ClaimTypes.NameIdentifier)?.Value, out int userId))
+            catch (UnauthorizedAccessException ex)
             {
-                return await _context.Products.Where(p => p.CreatorUserId == userId).ToListAsync();
+                return BadRequest(ex.Message);
             }
-            return BadRequest("User was not found.");
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<Product>> GetProduct(int id)
         {
-            var roles = User?.FindAll(ClaimTypes.Role).Select(r => r.Value);
-            Product? product = null;
-            if (roles is not null && roles.Contains("Admin"))
+            try
             {
-                product = await _context.Products.FirstOrDefaultAsync(p => p.Id == id && p.IsAvailable);
+                var product = await _productService.GetProductAsync(id, User);
+                return product is null ? NotFound("Such product was not found.") : Ok(product);
             }
-            else if (int.TryParse(User?.FindFirst(ClaimTypes.NameIdentifier)?.Value, out int userId))
+            catch (UnauthorizedAccessException ex)
             {
-                product = await _context.Products.FirstOrDefaultAsync(p => p.CreatorUserId == userId && p.Id == id);
+                return BadRequest(ex.Message);
             }
-            else
-            {
-                return BadRequest("User was not found.");
-            }
-            return product is null ? NotFound("Such product was not found.") : Ok(product);
         }
 
         [HttpPost]
         public async Task<ActionResult<Product>> CreateProduct(ProductDTO productDTO)
         {
-            if (int.TryParse(User?.FindFirst(ClaimTypes.NameIdentifier)?.Value, out int userId))
+            try
             {
-                var product = new Product
-                {
-                    Name = productDTO.Name,
-                    Description = productDTO.Description,
-                    Price = productDTO.Price,
-                    IsAvailable = true,
-                    CreatorUserId = userId,
-                };
-                _context.Products.Add(product);
-                await _context.SaveChangesAsync();
-
+                var product = await _productService.CreateProductAsync(productDTO, User);
                 return CreatedAtAction(nameof(GetProduct), new { id = product.Id }, product);
             }
-            return BadRequest("User was not found.");
+            catch (UnauthorizedAccessException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateProduct(int id, ProductDTO product)
+        public async Task<IActionResult> UpdateProduct(int id, ProductDTO productDTO)
         {
-            if(int.TryParse(User?.FindFirst(ClaimTypes.NameIdentifier)?.Value, out int userId))
+            try
             {
-                var existingProduct = await _context.Products.FindAsync(id);
-                if (existingProduct is null || existingProduct.CreatorUserId != userId)
-                {
-                    return NotFound("Such product was not found.");
-                }
-
-                existingProduct.Name = product.Name;
-                existingProduct.Description = product.Description;
-                existingProduct.Price = product.Price;
-                _context.Entry(existingProduct).State = EntityState.Modified;
-                await _context.SaveChangesAsync();
+                await _productService.UpdateProductAsync(id, productDTO, User);
+                return Ok("Successfully updated product.");
             }
-            return BadRequest("User was not found.");
+            catch (UnauthorizedAccessException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteProduct(int id)
         {
-            if (int.TryParse(User?.FindFirst(ClaimTypes.NameIdentifier)?.Value, out int userId))
+            try
             {
-                var product = await _context.Products.FindAsync(id);
-                if (product is null || product.CreatorUserId != userId)
-                {
-                    return NotFound("Such product was not found.");
-                }
-                _context.Products.Remove(product);
-                await _context.SaveChangesAsync();
-
+                await _productService.DeleteProductAsync(id, User);
                 return Ok("Successfully deleted product.");
             }
-            return BadRequest("User was not found.");
+            catch (UnauthorizedAccessException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
     }
 }

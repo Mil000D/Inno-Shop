@@ -15,16 +15,14 @@ namespace UserManagementService.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class AuthController(UserDbContext context, IConfiguration configuration, IPublishEndpoint publishEndpoint) : ControllerBase
+    public class AuthController(UserDbContext context) : ControllerBase
     {
         private readonly UserDbContext _context = context;
-        private readonly IConfiguration _configuration = configuration;
-        private readonly IPublishEndpoint _publishEndpoint = publishEndpoint;
 
         [HttpPost("login")]
         public async Task<IActionResult> LoginAsync([FromBody] LoginDTO login)
         {
-            var user = await _context.Users.SingleOrDefaultAsync(u => u.Email == login.Email);
+            var user = await _context.Users.SingleOrDefaultAsync(u => u.Email == login.Email && u.IsActive);
             if (user == null || !BCrypt.Net.BCrypt.Verify(login.Password, user.PasswordHash))
             {
                 return Unauthorized();
@@ -40,17 +38,17 @@ namespace UserManagementService.Controllers
             var claims = new[]
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim("Role", "User"),
-                new Claim(ClaimTypes.Role, "User")
+                new Claim("Role", Role.User.ToString()),
+                new Claim(ClaimTypes.Role, Role.User.ToString())
             };
 
             if (user.Role == Role.Admin)
             {
                 claims = new[] { new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                                 new Claim("Role", "Admin"),
-                                 new Claim("Role", "User"),
-                                 new Claim(ClaimTypes.Role, "Admin"),
-                                 new Claim(ClaimTypes.Role, "User")};
+                                 new Claim("Role", Role.Admin.ToString()),
+                                 new Claim("Role", Role.User.ToString()),
+                                 new Claim(ClaimTypes.Role, Role.Admin.ToString()),
+                                 new Claim(ClaimTypes.Role, Role.User.ToString())};
             }
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("7CCA9FF4A0D5427FBB382974B5E2AC092BB38974B5E4B5E2AC092BB38974B5E2AC092AC09"));

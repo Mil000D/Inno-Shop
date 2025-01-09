@@ -5,6 +5,8 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using ProductManagementService.Consumers;
 using ProductManagementService.DAL.Context;
+using ProductManagementService.DAL.Repositories;
+using ProductManagementService.Services;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,6 +19,8 @@ builder.Services.AddDbContext<ProductDbContext>(options =>
 builder.Services.AddMassTransit(x =>
 {
     x.AddConsumer<UserDeletedConsumer>();
+    x.AddConsumer<UserDeactivatedConsumer>();
+    x.AddConsumer<UserActivatedConsumer>();
 
     x.SetKebabCaseEndpointNameFormatter();
 
@@ -46,6 +50,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["SecretKey"]!))
     };
 });
+
+builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

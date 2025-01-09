@@ -1,6 +1,6 @@
 ﻿namespace EventBus
 {
-    public class UserDeleted
+    public class UserDeactivated
     {
         public int Id { get; set; }
     }
