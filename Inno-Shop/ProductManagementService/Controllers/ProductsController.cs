@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ProductManagementService.DTOs;
 using ProductManagementService.Models;
@@ -49,6 +50,10 @@ namespace ProductManagementService.Controllers
                 var product = await _productService.CreateProductAsync(productDTO, User);
                 return CreatedAtAction(nameof(GetProduct), new { id = product.Id }, product);
             }
+            catch(ValidationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
             catch (UnauthorizedAccessException ex)
             {
                 return BadRequest(ex.Message);
@@ -62,6 +67,10 @@ namespace ProductManagementService.Controllers
             {
                 await _productService.UpdateProductAsync(id, productDTO, User);
                 return Ok("Successfully updated product.");
+            }
+            catch (ValidationException ex)
+            {
+                return BadRequest(ex.Message);
             }
             catch (UnauthorizedAccessException ex)
             {

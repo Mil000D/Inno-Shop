@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UserManagementService.DTOs;
 using UserManagementService.Models;
@@ -49,6 +50,10 @@ namespace UserManagementService.Controllers
                 var user = await _userService.CreateUserAsync(register);
                 return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
             }
+            catch (ValidationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
             catch (InvalidOperationException ex)
             {
                 return BadRequest(ex.Message);
@@ -62,6 +67,10 @@ namespace UserManagementService.Controllers
             {
                 await _userService.UpdateUserAsync(id, user, User);
                 return Ok("User updated successfully.");
+            }
+            catch (ValidationException ex)
+            {
+                return BadRequest(ex.Message);
             }
             catch (KeyNotFoundException ex)
             {

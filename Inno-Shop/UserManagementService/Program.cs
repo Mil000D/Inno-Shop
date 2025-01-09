@@ -1,3 +1,4 @@
+using FluentValidation;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -6,7 +7,9 @@ using Microsoft.OpenApi.Models;
 using System.Text;
 using UserManagementService.DAL.Context;
 using UserManagementService.DAL.Repositories;
+using UserManagementService.DTOs;
 using UserManagementService.Services;
+using UserManagementService.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -47,6 +50,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IValidator<UserDTO>, UserDTOValidator>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

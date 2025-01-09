@@ -4,13 +4,15 @@ using UserManagementService.Models;
 using System.Security.Claims;
 using EventBus;
 using MassTransit;
+using FluentValidation;
 
 namespace UserManagementService.Services
 {
-    public class UserService(IUserRepository userRepository, IPublishEndpoint publishEndpoint) : IUserService
+    public class UserService(IUserRepository userRepository, IPublishEndpoint publishEndpoint, IValidator<UserDTO> validator) : IUserService
     {
         private readonly IUserRepository _userRepository = userRepository;
         private readonly IPublishEndpoint _publishEndpoint = publishEndpoint;
+        private readonly IValidator<UserDTO> _validator = validator;
 
         public async Task<IEnumerable<User>> GetUsersAsync(ClaimsPrincipal user)
         {
@@ -32,6 +34,8 @@ namespace UserManagementService.Services
 
         public async Task<User> CreateUserAsync(UserDTO register)
         {
+            await _validator.ValidateAndThrowAsync(register);
+
             if (await _userRepository.GetUserByEmailAsync(register.Email) != null)
             {
                 throw new InvalidOperationException("User with this email already exists.");
@@ -52,6 +56,8 @@ namespace UserManagementService.Services
 
         public async Task UpdateUserAsync(int id, UserDTO user, ClaimsPrincipal userPrincipal)
         {
+            await _validator.ValidateAndThrowAsync(user);
+
             if (int.TryParse(userPrincipal?.FindFirst(ClaimTypes.NameIdentifier)?.Value, out int userId) && id != userId)
             {
                 var userToUpdate = await _userRepository.GetActivatedUserByIdAsync(id, userId) 

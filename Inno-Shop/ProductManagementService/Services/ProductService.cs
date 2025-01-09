@@ -1,3 +1,4 @@
+using FluentValidation;
 using ProductManagementService.DAL.Repositories;
 using ProductManagementService.DTOs;
 using ProductManagementService.Models;
@@ -5,9 +6,10 @@ using System.Security.Claims;
 
 namespace ProductManagementService.Services
 {
-    public class ProductService(IProductRepository productRepository) : IProductService
+    public class ProductService(IProductRepository productRepository, IValidator<ProductDTO> validator) : IProductService
     {
         private readonly IProductRepository _productRepository = productRepository;
+        private readonly IValidator<ProductDTO> _validator = validator;
 
         public async Task<IEnumerable<Product>> GetProductsAsync(ClaimsPrincipal user)
         {
@@ -39,6 +41,8 @@ namespace ProductManagementService.Services
 
         public async Task<Product> CreateProductAsync(ProductDTO productDTO, ClaimsPrincipal user)
         {
+            await _validator.ValidateAndThrowAsync(productDTO);
+
             if (int.TryParse(user?.FindFirst(ClaimTypes.NameIdentifier)?.Value, out int userId))
             {
                 var product = new Product
@@ -57,6 +61,8 @@ namespace ProductManagementService.Services
 
         public async Task UpdateProductAsync(int id, ProductDTO productDTO, ClaimsPrincipal user)
         {
+            await _validator.ValidateAndThrowAsync(productDTO);
+
             if (int.TryParse(user?.FindFirst(ClaimTypes.NameIdentifier)?.Value, out int userId))
             {
                 var existingProduct = await _productRepository.GetProductByIdAndUserIdAsync(id, userId)

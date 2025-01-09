@@ -1,3 +1,4 @@
+using FluentValidation;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -6,7 +7,9 @@ using Microsoft.OpenApi.Models;
 using ProductManagementService.Consumers;
 using ProductManagementService.DAL.Context;
 using ProductManagementService.DAL.Repositories;
+using ProductManagementService.DTOs;
 using ProductManagementService.Services;
+using ProductManagementService.Validators;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -53,6 +56,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<IValidator<ProductDTO>, ProductDTOValidator>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
