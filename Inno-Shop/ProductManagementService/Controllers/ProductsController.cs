@@ -48,7 +48,7 @@ namespace ProductManagementService.Controllers
             try
             {
                 var product = await _productService.CreateProductAsync(productDTO, User);
-                return CreatedAtAction(nameof(GetProduct), new { id = product.Id }, product);
+                return Ok($"Product: {product.Name} was successfully created.");
             }
             catch(ValidationException ex)
             {

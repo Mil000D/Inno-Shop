@@ -48,7 +48,7 @@ namespace UserManagementService.Controllers
             try
             {
                 var user = await _userService.CreateUserAsync(register);
-                return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
+                return Ok($"User: {user.Name} was created successfully, message with activation token was sent to e-mail address: {user.Email}.");
             }
             catch (ValidationException ex)
             {

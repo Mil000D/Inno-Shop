@@ -1,66 +1,90 @@
-﻿using EventBus;
-using MassTransit;
+﻿using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-using UserManagementService.DAL.Context;
 using UserManagementService.DTOs;
-using UserManagementService.Enums;
-using UserManagementService.Models;
+using UserManagementService.Services;
 
 namespace UserManagementService.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class AuthController(UserDbContext context) : ControllerBase
+    public class AuthController(IAuthService authService) : ControllerBase
     {
-        private readonly UserDbContext _context = context;
+        private readonly IAuthService _authService = authService;
 
         [HttpPost("login")]
         public async Task<IActionResult> LoginAsync([FromBody] LoginDTO login)
         {
-            var user = await _context.Users.SingleOrDefaultAsync(u => u.Email == login.Email && u.IsActive);
-            if (user == null || !BCrypt.Net.BCrypt.Verify(login.Password, user.PasswordHash))
+            try
             {
-                return Unauthorized();
+                var token = await _authService.LoginAsync(login);
+                return Ok(new { token });
             }
-
-            var token = GenerateJwtToken(user);
-            return Ok(new { token });
+            catch (ValidationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(ex.Message);
+            }
         }
 
-
-        private string GenerateJwtToken(User user)
+        [HttpPost("request-password-reset")]
+        public async Task<IActionResult> RequestPasswordResetAsync([FromBody] PasswordResetRequestDTO request)
         {
-            var claims = new[]
+            try
             {
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim("Role", Role.User.ToString()),
-                new Claim(ClaimTypes.Role, Role.User.ToString())
-            };
-
-            if (user.Role == Role.Admin)
-            {
-                claims = new[] { new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                                 new Claim("Role", Role.Admin.ToString()),
-                                 new Claim("Role", Role.User.ToString()),
-                                 new Claim(ClaimTypes.Role, Role.Admin.ToString()),
-                                 new Claim(ClaimTypes.Role, Role.User.ToString())};
+                await _authService.RequestPasswordResetAsync(request);
+                return Ok("Password reset email sent.");
             }
+            catch (ValidationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Error sending email: " + ex.Message);
+            }
+        }
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("7CCA9FF4A0D5427FBB382974B5E2AC092BB38974B5E4B5E2AC092BB38974B5E2AC092AC09"));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-            var token = new JwtSecurityToken(
-                issuer: "issuer",
-                audience: "audience",
-                claims: claims,
-                expires: DateTime.Now.AddMinutes(30),
-                signingCredentials: creds);
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPasswordAsync([FromBody] PasswordResetDTO reset)
+        {
+            try
+            {
+                await _authService.ResetPasswordAsync(reset);
+                return Ok("Password has been reset. Now you can log in.");
+            }
+            catch (ValidationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
 
-            return new JwtSecurityTokenHandler().WriteToken(token);
+        [HttpPost("verify-account")]
+        public async Task<IActionResult> VerifyAccountAsync([FromBody] AccountVerificationDTO verification)
+        {
+            try
+            {
+                await _authService.VerifyAccountAsync(verification);
+                return Ok("Account has been verified. Now you can log in.");
+            }
+            catch (ValidationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
     }
 }

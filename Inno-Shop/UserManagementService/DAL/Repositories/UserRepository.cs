@@ -6,14 +6,9 @@ using System.Threading.Tasks;
 
 namespace UserManagementService.DAL.Repositories
 {
-    public class UserRepository : IUserRepository
+    public class UserRepository(UserDbContext context) : IUserRepository
     {
-        private readonly UserDbContext _context;
-
-        public UserRepository(UserDbContext context)
-        {
-            _context = context;
-        }
+        private readonly UserDbContext _context = context;
 
         public async Task<IEnumerable<User>> GetUsersAsync(int currentUserId)
         {
@@ -61,6 +56,21 @@ namespace UserManagementService.DAL.Repositories
         public async Task<User?> GetUserByIdAsync(int id)
         {
             return await _context.Users.FindAsync(id);
+        }
+
+        public async Task<User?> GetUserByPasswordResetTokenAsync(string token)
+        {
+            return await _context.Users.SingleOrDefaultAsync(u => u.PasswordResetToken == token && u.IsActive);
+        }
+
+        public async Task<User?> GetUserByAccountVerificationTokenAsync(string token)
+        {
+            return await _context.Users.SingleOrDefaultAsync(u => u.AccountVerificationToken == token && u.IsActive && !u.IsVerified);
+        }
+
+        public async Task SaveChangesAsync()
+        {
+            await _context.SaveChangesAsync();
         }
     }
 }

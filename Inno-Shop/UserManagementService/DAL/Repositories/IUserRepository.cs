@@ -1,6 +1,4 @@
 using UserManagementService.Models;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace UserManagementService.DAL.Repositories
 {
@@ -15,5 +13,8 @@ namespace UserManagementService.DAL.Repositories
         Task UpdateUserAsync(User user);
         Task DeleteUserAsync(User user);
         Task<User?> GetUserByIdAsync(int id);
+        Task<User?> GetUserByPasswordResetTokenAsync(string token);
+        Task<User?> GetUserByAccountVerificationTokenAsync(string token);
+        Task SaveChangesAsync();
     }
 }

@@ -10,5 +10,8 @@ namespace UserManagementService.Models
         public required Role Role { get; set; }
         public required string PasswordHash { get; set; }
         public required bool IsActive { get; set; }
+        public string? PasswordResetToken { get; set; }
+        public required bool IsVerified { get; set; }
+        public string? AccountVerificationToken { get; set; }
     }
 }

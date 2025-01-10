@@ -5,14 +5,19 @@ using System.Security.Claims;
 using EventBus;
 using MassTransit;
 using FluentValidation;
+using MailKit.Security;
+using MimeKit;
+using MailKit.Net.Smtp;
+using UserManagementService.TokenHandlers;
 
 namespace UserManagementService.Services
 {
-    public class UserService(IUserRepository userRepository, IPublishEndpoint publishEndpoint, IValidator<UserDTO> validator) : IUserService
+    public class UserService(IUserRepository userRepository, IPublishEndpoint publishEndpoint, IValidator<UserDTO> validator, ITokenHandler tokenHandler) : IUserService
     {
         private readonly IUserRepository _userRepository = userRepository;
         private readonly IPublishEndpoint _publishEndpoint = publishEndpoint;
         private readonly IValidator<UserDTO> _validator = validator;
+        private readonly ITokenHandler _tokenHandler = tokenHandler;
 
         public async Task<IEnumerable<User>> GetUsersAsync(ClaimsPrincipal user)
         {
@@ -41,14 +46,30 @@ namespace UserManagementService.Services
                 throw new InvalidOperationException("User with this email already exists.");
             }
 
+            var token = _tokenHandler.GenerateGuidBasedToken();
+
             var user = new User
             {
                 Name = register.Name,
                 Email = register.Email,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(register.Password),
                 Role = register.Role,
-                IsActive = true
+                IsActive = true,
+                IsVerified = false,
+                AccountVerificationToken = token
             };
+
+            var message = new MimeMessage();
+            message.From.Add(new MailboxAddress("no-reply", "no-reply@inno-shop.com"));
+            message.To.Add(new MailboxAddress(user.Name, user.Email));
+            message.Subject = "Account Verification";
+            message.Body = new TextPart("plain") { Text = $"Please verify your account using the following token: {token}" };
+
+            using var client = new SmtpClient();
+            client.CheckCertificateRevocation = false;
+            await client.ConnectAsync("localhost", 2525, SecureSocketOptions.Auto);
+            await client.SendAsync(message);
+            await client.DisconnectAsync(true);
 
             await _userRepository.AddUserAsync(user);
             return user;
