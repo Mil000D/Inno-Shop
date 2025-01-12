@@ -67,7 +67,7 @@ namespace UserManagementService.Services
 
             using var client = new SmtpClient();
             client.CheckCertificateRevocation = false;
-            await client.ConnectAsync("localhost", 2525, SecureSocketOptions.Auto);
+            await client.ConnectAsync("mailhog", 1025, SecureSocketOptions.Auto);
             await client.SendAsync(message);
             await client.DisconnectAsync(true);
 
