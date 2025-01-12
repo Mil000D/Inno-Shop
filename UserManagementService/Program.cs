@@ -3,6 +3,7 @@ using Hellang.Middleware.ProblemDetails;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
@@ -19,7 +20,8 @@ ProblemDetailsExtensions.AddProblemDetails(builder.Services);
 
 builder.Services.AddDbContext<UserDbContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("ConnectionString"));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("ConnectionString")).ConfigureWarnings(warnings => warnings.Ignore(RelationalEventId.PendingModelChangesWarning))
+;
 });
 builder.Services.AddMassTransit(x =>
 {
@@ -95,6 +97,12 @@ builder.Services.ConfigureSwaggerGen(e =>
 });
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<UserDbContext>();
+    context.Database.Migrate();
+}
 
 app.UseProblemDetails();
 
