@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OcelotApiGateway", "OcelotA
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProductManagementService", "ProductManagementService\ProductManagementService.csproj", "{ED6DE1D4-E156-458A-88D1-210D1EEA50E8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventBus", "EventBus\EventBus.csproj", "{8EC0D3A3-8C5D-4A48-8836-7720475C7155}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EventBus", "EventBus\EventBus.csproj", "{8EC0D3A3-8C5D-4A48-8836-7720475C7155}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

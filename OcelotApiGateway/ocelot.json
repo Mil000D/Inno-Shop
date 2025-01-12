@@ -3,12 +3,12 @@
     {
       "UpstreamPathTemplate": "/gateway/auth/{everything}",
       "UpstreamHttpMethod": [ "Post" ],
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamPathTemplate": "/api/auth/{everything}",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 7001
+          "Host": "usermanagementservice",
+          "Port": 5001
         }
       ],
       "SwaggerKey": "auth"
@@ -16,12 +16,12 @@
     {
       "UpstreamPathTemplate": "/gateway/users/{everything}",
       "UpstreamHttpMethod": [ "Get", "Post", "Put", "Delete" ],
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamPathTemplate": "/api/users/{everything}",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 7001
+          "Host": "usermanagementservice",
+          "Port": 5001
         }
       ],
       "FileCacheOptions": {
@@ -39,11 +39,11 @@
       "UpstreamPathTemplate": "/gateway/products/{everything}",
       "UpstreamHttpMethod": [ "Get", "Post", "Put", "Delete" ],
       "DownstreamPathTemplate": "/api/products/{everything}",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 7002
+          "Host": "productmanagementservice",
+          "Port": 5002
         }
       ],
       "FileCacheOptions": {
@@ -59,7 +59,7 @@
     }
   ],
   "GlobalConfiguration": {
-    "BaseUrl": "https://localhost:7000"
+    "BaseUrl": "http://localhost:5000"
   },
   "SwaggerEndPoints": [
     {
@@ -68,7 +68,7 @@
         {
           "Name": "Auth API",
           "Version": "v1",
-          "Url": "https://localhost:7001/swagger/v1/swagger.json"
+          "Url": "http://usermanagementservice:5001/swagger/v1/swagger.json"
         }
       ]
     },
@@ -78,7 +78,7 @@
         {
           "Name": "Users API",
           "Version": "v1",
-          "Url": "https://localhost:7001/swagger/v1/swagger.json"
+          "Url": "http://usermanagementservice:5001/swagger/v1/swagger.json"
         }
       ]
     },
@@ -88,7 +88,7 @@
         {
           "Name": "Products API",
           "Version": "v1",
-          "Url": "https://localhost:7002/swagger/v1/swagger.json"
+          "Url": "http://productmanagementservice:5002/swagger/v1/swagger.json"
         }
       ]
     }

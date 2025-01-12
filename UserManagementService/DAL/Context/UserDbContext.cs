@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using UserManagementService.Enums;
 using UserManagementService.Models;
 
 namespace UserManagementService.DAL.Context

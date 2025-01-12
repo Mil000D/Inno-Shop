@@ -1,39 +1,47 @@
 using FluentValidation;
+using Hellang.Middleware.ProblemDetails;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using ProductManagementService.Consumers;
+using ProductManagementService.DAL.Context;
+using ProductManagementService.DAL.Repositories;
+using ProductManagementService.DTOs;
+using ProductManagementService.Services;
+using ProductManagementService.Validators;
 using System.Text;
-using UserManagementService.DAL.Context;
-using UserManagementService.DAL.Repositories;
-using UserManagementService.DTOs;
-using UserManagementService.Services;
-using UserManagementService.TokenHandlers;
-using UserManagementService.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContext<UserDbContext>(options =>
+ProblemDetailsExtensions.AddProblemDetails(builder.Services);
+
+builder.Services.AddDbContext<ProductDbContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("ConnectionString"));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("ConnectionString"));
 });
+
 builder.Services.AddMassTransit(x =>
 {
+    x.AddConsumer<UserDeletedConsumer>();
+    x.AddConsumer<UserDeactivatedConsumer>();
+    x.AddConsumer<UserActivatedConsumer>();
 
     x.SetKebabCaseEndpointNameFormatter();
 
     x.UsingRabbitMq((context, cfg) =>
     {
-
         cfg.Host(builder.Configuration["RabbitMq:Host"], "/", host =>
         {
-            host.Username(builder.Configuration.GetValue("RabbitMq:Username", "guest"));
-            host.Password(builder.Configuration.GetValue("RabbitMq:Password", "guest"));
+            host.Username(builder.Configuration["RabbitMq:Username"]!);
+            host.Password(builder.Configuration["RabbitMq:Password"]!);
         });
+
         cfg.ConfigureEndpoints(context);
     });
 });
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 .AddJwtBearer(options =>
 {
@@ -49,16 +57,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     };
 });
 
-builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IValidator<UserDTO>, UserDTOValidator>();
-builder.Services.AddScoped<IValidator<AccountVerificationDTO>, AccountVerificationDTOValidator>();
-builder.Services.AddScoped<IValidator<AccountVerificationRequestDTO>, AccountVerificationRequestDTOValidator>();
-builder.Services.AddScoped<IValidator<LoginDTO>, LoginDTOValidator>();
-builder.Services.AddScoped<IValidator<PasswordResetDTO>, PasswordResetDTOValidator>();
-builder.Services.AddScoped<IValidator<PasswordResetRequestDTO>, PasswordResetRequestDTOValidator>();
-builder.Services.AddScoped<ITokenHandler, UserManagementService.TokenHandlers.TokenHandler>();
+builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<IValidator<ProductDTO>, ProductDTOValidator>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -88,15 +89,12 @@ builder.Services.ConfigureSwaggerGen(e =>
             Array.Empty<string>()
         }
     });
-
 });
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-}
+app.UseProblemDetails();
+app.UseSwagger();
 
 app.UseHttpsRedirection();
 

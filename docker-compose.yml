@@ -2,6 +2,7 @@ version: '3.8'
 services:
   postgres:
     image: postgres:latest
+    container_name: postgres
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: mysecretpassword
@@ -12,6 +13,7 @@ services:
 
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqlserver
     environment:
       SA_PASSWORD: mystrong!Password0
       ACCEPT_EULA: "Y"
@@ -21,7 +23,8 @@ services:
       - '/var/opt/mssql'
 
   rabbitmq:
-    image: rabbitmq:3-management
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitmq
     ports:
       - "5672:5672"
       - "15672:15672"
@@ -32,3 +35,37 @@ services:
     ports:
       - "2525:1025"
       - "8025:8025"
+
+  usermanagementservice:
+    image: usermanagementservice:latest
+    container_name: usermanagementservice
+    build:
+      context: .
+      dockerfile: UserManagementService/Dockerfile
+    ports:
+      - "5001:5001"
+    depends_on:
+      - sqlserver
+      - rabbitmq
+      - mailhog
+
+  productmanagementservice:
+    image: productmanagementservice:latest
+    container_name: productmanagementservice
+    build:
+      context: .
+      dockerfile: ProductManagementService/Dockerfile
+    ports:
+      - "5002:5002"
+    depends_on:
+      - postgres
+      - rabbitmq
+  
+  ocelotapigateway:
+    image: ocelotapigateway:latest
+    container_name: ocelotapigateway
+    build:
+      context: .
+      dockerfile: OcelotApiGateway/Dockerfile
+    ports:
+      - "5000:5000"
